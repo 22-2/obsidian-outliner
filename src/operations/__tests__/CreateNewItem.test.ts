@@ -92,7 +92,7 @@ describe("CreateNewItem operation", () => {
     expect(root.getCursor().ch).toBe(6);
   });
 
-  test("should do nothing for an empty list item", () => {
+  test("should create new item for an empty list item", () => {
     const root = makeRoot({
       editor: makeEditor({
         text: "- item 1\n- \n- item 3\n",
@@ -104,10 +104,12 @@ describe("CreateNewItem operation", () => {
     const op = new CreateNewItem(root, "  ", getZoomRange);
     op.perform();
 
-    expect(root.print()).toBe("- item 1\n- \n- item 3");
+    expect(root.print()).toBe("- item 1\n- \n- \n- item 3");
+    expect(root.getCursor().line).toBe(2);
+    expect(root.getCursor().ch).toBe(2);
   });
 
-  test("should do nothing for an empty checkbox", () => {
+  test("should create new item for an empty checkbox", () => {
     const root = makeRoot({
       editor: makeEditor({
         text: "- item 1\n- [ ] \n- item 3\n",
@@ -119,7 +121,9 @@ describe("CreateNewItem operation", () => {
     const op = new CreateNewItem(root, "  ", getZoomRange);
     op.perform();
 
-    expect(root.print()).toBe("- item 1\n- [ ] \n- item 3");
+    expect(root.print()).toBe("- item 1\n- [ ] \n- [ ] \n- item 3");
+    expect(root.getCursor().line).toBe(2);
+    expect(root.getCursor().ch).toBe(6);
   });
 
   test("should do nothing when cursor is before the bullet", () => {

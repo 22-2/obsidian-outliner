@@ -42,10 +42,6 @@ export class CreateNewItem implements Operation {
     const list = root.getListUnderCursor();
     const lines = list.getLinesInfo();
 
-    if (lines.length === 1 && isEmptyLineOrEmptyCheckbox(lines[0].text)) {
-      return;
-    }
-
     const cursor = root.getCursor();
     const lineUnderCursor = lines.find((l) => l.from.line === cursor.line);
 

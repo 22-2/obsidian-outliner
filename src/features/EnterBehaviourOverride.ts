@@ -58,18 +58,6 @@ export class EnterBehaviourOverride implements Feature {
     }
 
     {
-      const res = this.operationPerformer.eval(
-        root,
-        new OutdentListIfItsEmpty(root),
-        editor,
-      );
-
-      if (res.shouldStopPropagation) {
-        return res;
-      }
-    }
-
-    {
       const defaultIndentChars = this.obsidianSettings.getDefaultIndentChars();
       const zoomRange = editor.getZoomRange();
       const getZoomRange = {
