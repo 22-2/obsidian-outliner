@@ -23,7 +23,7 @@ const buildOptions = {
   format: "cjs",
   platform: "browser",
   target: ["es6"],
-  sourcemap: "inline",
+  sourcemap: watch ? "inline" : false,
   logLevel: "info",
   minify: !watch,
   external: [
@@ -36,9 +36,6 @@ const buildOptions = {
   define: {
     PLUGIN_VERSION: JSON.stringify(pkg.version),
     CHANGELOG_MD: JSON.stringify(changelog),
-  },
-  footer: {
-    js: "\n// Obsidian loads plugins via CommonJS and expects `module.exports = PluginClass`.\n// esbuild emits `{ default: PluginClass }` for `export default`, so normalize here.\nif (module && module.exports && module.exports.default) module.exports = module.exports.default;\n",
   },
 };
 
