@@ -33,10 +33,13 @@ export class EditorSelectionsBehaviourOverride implements Feature {
     }
 
     const editor = getEditorFromState(tr.startState);
+    if (!editor) {
+      return null;
+    }
 
-    setTimeout(() => {
+    queueMicrotask(() => {
       this.handleSelectionsChanges(editor);
-    }, 0);
+    });
 
     return null;
   };
