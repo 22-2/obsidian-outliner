@@ -64,6 +64,20 @@ class ObsidianOutlinerPluginSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Enter: outdent last empty item")
+      .setDesc(
+        "When pressing Enter on an empty list item that is the last item on its level, outdent it to the parent level.",
+      )
+      .addToggle((toggle) => {
+        toggle.setValue(this.settings.enterOutdentEmptyLastItem).onChange(
+          async (value) => {
+            this.settings.enterOutdentEmptyLastItem = value;
+            await this.settings.save();
+          },
+        );
+      });
+
+    new Setting(containerEl)
       .setName("Vim-mode o/O inserts bullets")
       .setDesc("Create a bullet when pressing o or O in Vim mode.")
       .addToggle((toggle) => {

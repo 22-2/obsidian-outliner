@@ -57,7 +57,7 @@ export class EnterBehaviourOverride implements Feature {
       };
     }
 
-    {
+    if (this.settings.enterOutdentEmptyLastItem) {
       const res = this.operationPerformer.eval(
         root,
         new OutdentListIfItsEmpty(root),
