@@ -12,6 +12,7 @@ import { Feature } from "./features/Feature";
 import { ListsFoldingCommands } from "./features/ListsFoldingCommands";
 import { ListsMovementCommands } from "./features/ListsMovementCommands";
 import { MetaBackspaceBehaviourOverride } from "./features/MetaBackspaceBehaviourOverride";
+import { PasteBehaviourOverride } from "./features/PasteBehaviourOverride";
 // import { ReleaseNotesAnnouncement } from "./features/ReleaseNotesAnnouncement";
 import { SettingsTab } from "./features/SettingsTab";
 import { ShiftTabBehaviourOverride } from "./features/ShiftTabBehaviourOverride";
@@ -102,6 +103,12 @@ export default class ObsidianOutlinerPlugin extends Plugin {
         this,
         this.settings,
         this.imeDetector,
+        this.operationPerformer,
+      ),
+
+      new PasteBehaviourOverride(
+        this,
+        this.settings,
         this.operationPerformer,
       ),
 
