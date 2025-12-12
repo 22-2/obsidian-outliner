@@ -60,8 +60,7 @@ export class PasteContent implements Operation {
 
     const rawLines = this.content.split(/\r\n|\r|\n/);
     const pastedLines = rawLines
-      .map(normalizePastedLine)
-      .filter((l) => l.length > 0);
+      .map(normalizePastedLine);
 
     if (pastedLines.length === 0) {
       return;

@@ -98,4 +98,19 @@ describe("PasteContent operation", () => {
 
     expect(root.print()).toBe("- item 1\n  - pasted 1\n  - pasted 2\n  - pasted 3");
   });
+
+  test("should paste content with empty lines as empty items", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- item 1\n",
+        cursor: { line: 0, ch: 8 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new PasteContent(root, "line 1\n\nline 2");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1line 1\n- \n- line 2");
+  });
 });
