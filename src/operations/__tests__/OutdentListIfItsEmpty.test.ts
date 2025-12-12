@@ -110,3 +110,20 @@ test("should not outdent if there are multiple selections", () => {
   expect(op.shouldStopPropagation()).toBe(false);
   expect(op.shouldUpdate()).toBe(false);
 });
+
+test("should not outdent if it is not the last item", () => {
+  const root = makeRoot({
+    editor: makeEditor({
+      text: "- one\n  - \n  - three",
+      cursor: { line: 1, ch: 4 },
+    }),
+    settings: makeSettings(),
+  });
+
+  const op = new OutdentListIfItsEmpty(root);
+  op.perform();
+
+  expect(root.print()).toBe("- one\n  - \n  - three");
+  expect(op.shouldStopPropagation()).toBe(false);
+  expect(op.shouldUpdate()).toBe(false);
+});

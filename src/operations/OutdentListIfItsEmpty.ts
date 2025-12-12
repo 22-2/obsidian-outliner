@@ -37,6 +37,10 @@ export class OutdentListIfItsEmpty implements Operation {
       return;
     }
 
+    if (list.getParent().getNextSiblingOf(list)) {
+      return;
+    }
+
     this.outdentList.perform();
   }
 }
