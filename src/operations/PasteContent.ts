@@ -1,5 +1,6 @@
-import { List, Root, recalculateNumericBullets } from "../root";
 import { Operation } from "./Operation";
+
+import { List, Root, recalculateNumericBullets } from "../root";
 
 function normalizePastedLine(line: string): string {
   return line
@@ -8,16 +9,18 @@ function normalizePastedLine(line: string): string {
     .replace(/[\t ]+/g, " ");
 }
 
-function stripLeadingListHyphen(line: string): string {
-  if (line === "-") {
-    return "";
-  }
+function stripLeadingListMark(bullet: string): (line: string) => string {
+  return (line: string) => {
+    if (line === bullet) {
+      return "";
+    }
 
-  if (line.startsWith("- ")) {
-    return line.slice(2);
-  }
+    if (line.startsWith(bullet + " ")) {
+      return line.slice(2);
+    }
 
-  return line;
+    return line;
+  };
 }
 
 export class PasteContent implements Operation {
@@ -66,14 +69,17 @@ export class PasteContent implements Operation {
       return;
     }
 
-    if (selection.from < lineUnderCursor.from.ch || selection.to > lineUnderCursor.to.ch) {
+    if (
+      selection.from < lineUnderCursor.from.ch ||
+      selection.to > lineUnderCursor.to.ch
+    ) {
       return;
     }
 
     const rawLines = this.content.split(/\r\n|\r|\n/);
     const pastedLines = rawLines
       .map(normalizePastedLine)
-      .map(stripLeadingListHyphen);
+      .map(stripLeadingListMark(list.getBullet()));
 
     if (pastedLines.length === 0) {
       return;
