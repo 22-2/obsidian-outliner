@@ -8,6 +8,18 @@ function normalizePastedLine(line: string): string {
     .replace(/[\t ]+/g, " ");
 }
 
+function stripLeadingListHyphen(line: string): string {
+  if (line === "-") {
+    return "";
+  }
+
+  if (line.startsWith("- ")) {
+    return line.slice(2);
+  }
+
+  return line;
+}
+
 export class PasteContent implements Operation {
   private stopPropagation = false;
   private updated = false;
@@ -60,7 +72,8 @@ export class PasteContent implements Operation {
 
     const rawLines = this.content.split(/\r\n|\r|\n/);
     const pastedLines = rawLines
-      .map(normalizePastedLine);
+      .map(normalizePastedLine)
+      .map(stripLeadingListHyphen);
 
     if (pastedLines.length === 0) {
       return;

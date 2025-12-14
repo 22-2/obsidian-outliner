@@ -50,6 +50,21 @@ describe("PasteContent operation", () => {
 
     expect(root.print()).toBe("- first line\n- second linerst\n- last");
   });
+
+  test("should remove leading hyphen list markers from pasted lines", () => {
+    const root = makeRoot({
+      editor: makeEditor({
+        text: "- \n",
+        cursor: { line: 0, ch: 2 },
+      }),
+      settings: makeSettings(),
+    });
+
+    const op = new PasteContent(root, "- item 1\n  - item 2\n-");
+    op.perform();
+
+    expect(root.print()).toBe("- item 1\n- item 2\n- ");
+  });
   
   test("should trim whitespace from pasted lines", () => {
       const root = makeRoot({
