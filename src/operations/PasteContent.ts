@@ -53,9 +53,6 @@ export class PasteContent implements Operation {
     }
 
     const list = root.getListUnderCursor();
-    if (!list) {
-      return;
-    }
 
     const parent = list.getParent();
     if (!parent) {

@@ -61,6 +61,10 @@ export class MyEditor {
     this.view = (this.e as any).cm;
   }
 
+  isAlive(): boolean {
+    return this.view.dom.isConnected;
+  }
+
   getCursor(): MyEditorPosition {
     return this.e.getCursor();
   }

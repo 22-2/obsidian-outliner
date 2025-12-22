@@ -38,6 +38,9 @@ export class EditorSelectionsBehaviourOverride implements Feature {
     }
 
     queueMicrotask(() => {
+      if (!editor.isAlive()) {
+        return;
+      }
       this.handleSelectionsChanges(editor);
     });
 

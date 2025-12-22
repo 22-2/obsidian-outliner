@@ -12,6 +12,13 @@ export class OperationPerformer {
   ) {}
 
   eval(root: Root, op: Operation, editor: MyEditor) {
+    if (!root.getListUnderCursor()) {
+      return {
+        shouldUpdate: false,
+        shouldStopPropagation: false,
+      };
+    }
+
     const prevRoot = root.clone();
 
     op.perform();
