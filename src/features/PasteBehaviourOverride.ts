@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Plugin, htmlToMarkdown } from "obsidian";
 import { EditorView } from "@codemirror/view";
 
 import { Feature } from "./Feature";
@@ -36,7 +36,11 @@ export class PasteBehaviourOverride implements Feature {
       return;
     }
 
-    const text = e.clipboardData?.getData("text/plain");
+    const html = e.clipboardData?.getData("text/html");
+    const text =
+      html && html.length > 0
+        ? htmlToMarkdown(html)
+        : e.clipboardData?.getData("text/plain");
 
     if (!text) {
       return;
