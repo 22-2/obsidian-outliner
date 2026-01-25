@@ -25,6 +25,8 @@ export class OperationPerformer {
 
     if (op.shouldUpdate()) {
       this.changesApplicator.apply(editor, prevRoot, root);
+      // Clear cache after content changes
+      this.parser.clearCache();
     }
 
     return {
@@ -39,6 +41,11 @@ export class OperationPerformer {
     cursor = editor.getCursor(),
     useCache = true,
   ) {
+    // For editing operations, clear cache before parsing to ensure fresh data
+    if (!useCache) {
+      this.parser.clearCache();
+    }
+
     // Use cached parse for better performance
     const root = useCache
       ? this.parser.parse(editor, cursor)

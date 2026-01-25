@@ -158,7 +158,8 @@ export class Parser {
   }
 
   private getCacheKey(cursor: ReaderPosition): string {
-    return `${cursor.line}`;
+    // Include both line and ch to avoid cache collision when cursor moves on same line
+    return `${cursor.line}:${cursor.ch}`;
   }
 
   private getContentHash(editor: Reader, cursor: ReaderPosition): string {
@@ -167,9 +168,9 @@ export class Parser {
     const fromLine = Math.max(0, cursor.line - range);
     const toLine = Math.min(editor.lastLine(), cursor.line + range);
 
-    let hash = "";
+    let hash = `${cursor.line}:${cursor.ch}|`;
     for (let i = fromLine; i <= toLine; i++) {
-      hash += editor.getLine(i);
+      hash += editor.getLine(i) + "\n";
     }
 
     // Simple hash function

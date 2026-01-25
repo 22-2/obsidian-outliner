@@ -48,6 +48,9 @@ export class EnterBehaviourOverride implements Feature {
   };
 
   private run = (editor: MyEditor) => {
+    // Clear cache before parsing to ensure fresh data for Enter operation
+    this.parser.clearCache();
+
     const root = this.parser.parse(editor);
 
     if (!root) {
