@@ -11,22 +11,30 @@ const leveldown = require("leveldown");
 const KILL_CMD =
   process.platform === "darwin"
     ? ["killall", "Obsidian"]
-    : ["flatpak", "kill", "md.obsidian.Obsidian"];
+    : process.platform === "win32"
+      ? ["taskkill", "/IM", "Obsidian.exe", "/F"]
+      : ["flatpak", "kill", "md.obsidian.Obsidian"];
 const OBSIDIAN_CONFIG_DIR =
   process.platform === "darwin"
     ? process.env.HOME + "/Library/Application Support/obsidian"
-    : process.env.HOME + "/.var/app/md.obsidian.Obsidian/config/obsidian";
-const OBSIDIAN_CONFIG_PATH = OBSIDIAN_CONFIG_DIR + "/obsidian.json";
+    : process.platform === "win32"
+      ? process.env.APPDATA + "\\Obsidian"
+      : process.env.HOME + "/.var/app/md.obsidian.Obsidian/config/obsidian";
+const OBSIDIAN_CONFIG_PATH = OBSIDIAN_CONFIG_DIR + (process.platform === "win32" ? "\\obsidian.json" : "/obsidian.json");
 const OBSIDIAN_APP_CMD =
   process.platform === "darwin"
     ? ["/Applications/Obsidian.app/Contents/MacOS/Obsidian"]
-    : ["flatpak", "run", "md.obsidian.Obsidian"];
+    : process.platform === "win32"
+      ? ["Obsidian.exe"]
+      : ["flatpak", "run", "md.obsidian.Obsidian"];
 const OBSIDIAN_LOCAL_STORAGE_PATH =
   process.platform === "darwin"
     ? process.env.HOME +
       "/Library/Application Support/obsidian/Local Storage/leveldb"
-    : process.env.HOME +
-      "/.var/app/md.obsidian.Obsidian/config/obsidian/Local Storage/leveldb";
+    : process.platform === "win32"
+      ? process.env.APPDATA + "\\Obsidian\\Local Storage\\leveldb"
+      : process.env.HOME +
+        "/.var/app/md.obsidian.Obsidian/config/obsidian/Local Storage/leveldb";
 const OBISDIAN_TEST_VAULT_ID = "5a15473126091111";
 const VAULT_DIR = process.cwd() + "/vault";
 

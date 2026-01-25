@@ -7,13 +7,6 @@ import { checkboxRe } from "../utils/checkboxRe";
 const bulletSignRe = `(?:[-*+]|\\d+\\.)`;
 const optionalCheckboxRe = `(?:${checkboxRe})?`;
 
-const listItemWithoutSpacesRe = new RegExp(`^${bulletSignRe}( |\t)`);
-const listItemRe = new RegExp(`^[ \t]*${bulletSignRe}( |\t)`);
-const stringWithSpacesRe = new RegExp(`^[ \t]+`);
-const parseListItemRe = new RegExp(
-  `^([ \t]*)(${bulletSignRe})( |\t)(${optionalCheckboxRe})(.*)$`,
-);
-
 export interface ReaderPosition {
   line: number;
   ch: number;
@@ -30,6 +23,7 @@ export interface Reader {
   lastLine(): number;
   listSelections(): ReaderSelection[];
   getAllFoldedLines(): number[];
+  getValue?(): string; // For cache invalidation
 }
 
 interface ParseListList {
@@ -41,7 +35,28 @@ interface ParseListList {
   addAfterAll(list: ParseListList): void;
 }
 
+interface ParseCache {
+  root: Root;
+  contentHash: string;
+  timestamp: number;
+}
+
 export class Parser {
+  // Pre-compiled regexes for better performance
+  private static readonly COMPILED_REGEXES = {
+    listItemWithoutSpaces: new RegExp(`^${bulletSignRe}( |\t)`),
+    listItem: new RegExp(`^[ \t]*${bulletSignRe}( |\t)`),
+    stringWithSpaces: new RegExp(`^[ \t]+`),
+    parseListItem: new RegExp(
+      `^([ \t]*)(${bulletSignRe})( |\t)(${optionalCheckboxRe})(.*)`,
+    ),
+  };
+
+  // Cache for parsed results
+  private parseCache = new Map<string, ParseCache>();
+  private readonly CACHE_MAX_SIZE = 100;
+  private readonly CACHE_MAX_AGE = 5000; // 5 seconds
+
   constructor(
     private logger: Logger,
     private settings: Settings,
@@ -67,7 +82,120 @@ export class Parser {
   }
 
   parse(editor: Reader, cursor = editor.getCursor()): Root | null {
-    return this.parseWithLimits(editor, cursor.line, 0, editor.lastLine());
+    // Try to get from cache first
+    const cached = this.getCachedParse(editor, cursor);
+    if (cached) {
+      return cached;
+    }
+
+    const root = this.parseWithLimits(editor, cursor.line, 0, editor.lastLine());
+
+    // Cache the result
+    if (root) {
+      this.setCachedParse(editor, cursor, root);
+    }
+
+    return root;
+  }
+
+  // Parse only around cursor for better performance
+  parseAroundCursor(
+    editor: Reader,
+    cursor = editor.getCursor(),
+    range = 100,
+  ): Root | null {
+    const fromLine = Math.max(0, cursor.line - range);
+    const toLine = Math.min(editor.lastLine(), cursor.line + range);
+
+    return this.parseWithLimits(editor, cursor.line, fromLine, toLine);
+  }
+
+  // Clear cache when needed
+  clearCache(): void {
+    this.parseCache.clear();
+  }
+
+  private getCachedParse(editor: Reader, cursor: ReaderPosition): Root | null {
+    // Clean old cache entries
+    this.cleanOldCache();
+
+    const cacheKey = this.getCacheKey(cursor);
+    const cached = this.parseCache.get(cacheKey);
+
+    if (!cached) {
+      return null;
+    }
+
+    // Validate cache with content hash
+    const currentHash = this.getContentHash(editor, cursor);
+    if (cached.contentHash !== currentHash) {
+      this.parseCache.delete(cacheKey);
+      return null;
+    }
+
+    return cached.root;
+  }
+
+  private setCachedParse(
+    editor: Reader,
+    cursor: ReaderPosition,
+    root: Root,
+  ): void {
+    // Limit cache size
+    if (this.parseCache.size >= this.CACHE_MAX_SIZE) {
+      const firstKey = this.parseCache.keys().next().value;
+      this.parseCache.delete(firstKey);
+    }
+
+    const cacheKey = this.getCacheKey(cursor);
+    const contentHash = this.getContentHash(editor, cursor);
+
+    this.parseCache.set(cacheKey, {
+      root,
+      contentHash,
+      timestamp: Date.now(),
+    });
+  }
+
+  private getCacheKey(cursor: ReaderPosition): string {
+    return `${cursor.line}`;
+  }
+
+  private getContentHash(editor: Reader, cursor: ReaderPosition): string {
+    // Hash based on surrounding lines for quick validation
+    const range = 5;
+    const fromLine = Math.max(0, cursor.line - range);
+    const toLine = Math.min(editor.lastLine(), cursor.line + range);
+
+    let hash = "";
+    for (let i = fromLine; i <= toLine; i++) {
+      hash += editor.getLine(i);
+    }
+
+    // Simple hash function
+    let hashValue = 0;
+    for (let i = 0; i < hash.length; i++) {
+      const char = hash.charCodeAt(i);
+      hashValue = (hashValue << 5) - hashValue + char;
+      hashValue = hashValue & hashValue; // Convert to 32bit integer
+    }
+
+    return hashValue.toString(36);
+  }
+
+  private cleanOldCache(): void {
+    const now = Date.now();
+    const keysToDelete: string[] = [];
+
+    for (const [key, value] of this.parseCache.entries()) {
+      if (now - value.timestamp > this.CACHE_MAX_AGE) {
+        keysToDelete.push(key);
+      }
+    }
+
+    for (const key of keysToDelete) {
+      this.parseCache.delete(key);
+    }
   }
 
   private parseWithLimits(
@@ -178,7 +306,7 @@ export class Parser {
 
     for (let l = listStartLine; l <= listEndLine; l++) {
       const line = editor.getLine(l);
-      const matches = parseListItemRe.exec(line);
+      const matches = Parser.COMPILED_REGEXES.parseListItem.exec(line);
 
       if (matches) {
         const [, indent, bullet, spaceAfterBullet] = matches;
@@ -282,14 +410,14 @@ export class Parser {
   }
 
   private isLineWithIndent(line: string) {
-    return stringWithSpacesRe.test(line);
+    return Parser.COMPILED_REGEXES.stringWithSpaces.test(line);
   }
 
   private isListItem(line: string) {
-    return listItemRe.test(line);
+    return Parser.COMPILED_REGEXES.listItem.test(line);
   }
 
   private isListItemWithoutSpaces(line: string) {
-    return listItemWithoutSpacesRe.test(line);
+    return Parser.COMPILED_REGEXES.listItemWithoutSpaces.test(line);
   }
 }

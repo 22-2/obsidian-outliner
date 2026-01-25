@@ -37,8 +37,12 @@ export class OperationPerformer {
     cb: (root: Root) => Operation,
     editor: MyEditor,
     cursor = editor.getCursor(),
+    useCache = true,
   ) {
-    const root = this.parser.parse(editor, cursor);
+    // Use cached parse for better performance
+    const root = useCache
+      ? this.parser.parse(editor, cursor)
+      : this.parser.parseAroundCursor(editor, cursor);
 
     if (!root) {
       return { shouldUpdate: false, shouldStopPropagation: false };

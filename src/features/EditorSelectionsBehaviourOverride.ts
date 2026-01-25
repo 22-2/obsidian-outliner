@@ -12,6 +12,9 @@ import { Parser } from "../services/Parser";
 import { Settings } from "../services/Settings";
 
 export class EditorSelectionsBehaviourOverride implements Feature {
+  private debounceTimer: number | null = null;
+  private readonly DEBOUNCE_DELAY = 16; // ~60fps
+
   constructor(
     private plugin: Plugin,
     private settings: Settings,
@@ -25,7 +28,12 @@ export class EditorSelectionsBehaviourOverride implements Feature {
     );
   }
 
-  async unload() {}
+  async unload() {
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+  }
 
   private transactionExtender = (tr: Transaction): null => {
     if (this.settings.keepCursorWithinContent === "never" || !tr.selection) {
@@ -37,12 +45,20 @@ export class EditorSelectionsBehaviourOverride implements Feature {
       return null;
     }
 
-    queueMicrotask(() => {
-      if (!editor.isAlive()) {
-        return;
-      }
-      this.handleSelectionsChanges(editor);
-    });
+    // Debounce the selection changes handling
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+    }
+
+    this.debounceTimer = window.setTimeout(() => {
+      this.debounceTimer = null;
+      queueMicrotask(() => {
+        if (!editor.isAlive()) {
+          return;
+        }
+        this.handleSelectionsChanges(editor);
+      });
+    }, this.DEBOUNCE_DELAY);
 
     return null;
   };
