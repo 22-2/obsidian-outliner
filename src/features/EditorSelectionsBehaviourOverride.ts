@@ -50,15 +50,15 @@ export class EditorSelectionsBehaviourOverride implements Feature {
       clearTimeout(this.debounceTimer);
     }
 
-    this.debounceTimer = window.setTimeout(() => {
-      this.debounceTimer = null;
-      queueMicrotask(() => {
-        if (!editor.isAlive()) {
-          return;
-        }
-        this.handleSelectionsChanges(editor);
-      });
-    }, this.DEBOUNCE_DELAY);
+    // this.debounceTimer = window.setTimeout(() => {
+    //   this.debounceTimer = null;
+    // }, this.DEBOUNCE_DELAY);
+    queueMicrotask(() => {
+      if (!editor.isAlive()) {
+        return;
+      }
+      this.handleSelectionsChanges(editor);
+    });
 
     return null;
   };
