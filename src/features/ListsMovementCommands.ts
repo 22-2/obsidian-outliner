@@ -120,12 +120,24 @@ export class ListsMovementCommands implements Feature {
   };
 
   private insertAbove = (editor: MyEditor) => {
-    const { shouldStopPropagation } = this.operationPerformer.perform(
+    const res = this.operationPerformer.perform(
       (root) => new InsertBlankLineAbove(root, this.obsidianSettings.getDefaultIndentChars()),
       editor,
     );
 
-    return shouldStopPropagation;
+    if (res.shouldStopPropagation || res.shouldUpdate) {
+      return res.shouldStopPropagation;
+    }
+
+    // Fallback for non-list locations: insert raw empty line above current line
+    const cursor = editor.getCursor();
+    const pos = { line: cursor.line, ch: 0 };
+    editor.replaceRange("\n", pos, pos);
+    editor.setSelections([
+      { anchor: { line: cursor.line, ch: 0 }, head: { line: cursor.line, ch: 0 } },
+    ]);
+
+    return true;
   };
 
   private insertBelow = (editor: MyEditor) => {
