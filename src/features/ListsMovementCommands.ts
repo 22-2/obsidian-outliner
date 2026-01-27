@@ -7,6 +7,8 @@ import { IndentList } from "../operations/IndentList";
 import { MoveListDown } from "../operations/MoveListDown";
 import { MoveListUp } from "../operations/MoveListUp";
 import { OutdentList } from "../operations/OutdentList";
+import { InsertBlankLineAbove } from "../operations/InsertBlankLineAbove";
+import { InsertBlankLineBelow } from "../operations/InsertBlankLineBelow";
 import { ObsidianSettings } from "../services/ObsidianSettings";
 import { OperationPerformer } from "../services/OperationPerformer";
 import { createEditorCallback } from "../utils/createEditorCallback";
@@ -60,6 +62,22 @@ export class ListsMovementCommands implements Feature {
       editorCallback: createEditorCallback(this.outdentList),
       hotkeys: [],
     });
+
+    this.plugin.addCommand({
+      id: "insert-blank-line-above",
+      icon: "arrow-up-right",
+      name: "Insert blank list item above",
+      editorCallback: createEditorCallback(this.insertAbove),
+      hotkeys: [],
+    });
+
+    this.plugin.addCommand({
+      id: "insert-blank-line-below",
+      icon: "arrow-down-right",
+      name: "Insert blank list item below",
+      editorCallback: createEditorCallback(this.insertBelow),
+      hotkeys: [],
+    });
   }
 
   async unload() {}
@@ -95,6 +113,24 @@ export class ListsMovementCommands implements Feature {
   private outdentList = (editor: MyEditor) => {
     const { shouldStopPropagation } = this.operationPerformer.perform(
       (root) => new OutdentList(root),
+      editor,
+    );
+
+    return shouldStopPropagation;
+  };
+
+  private insertAbove = (editor: MyEditor) => {
+    const { shouldStopPropagation } = this.operationPerformer.perform(
+      (root) => new InsertBlankLineAbove(root, this.obsidianSettings.getDefaultIndentChars()),
+      editor,
+    );
+
+    return shouldStopPropagation;
+  };
+
+  private insertBelow = (editor: MyEditor) => {
+    const { shouldStopPropagation } = this.operationPerformer.perform(
+      (root) => new InsertBlankLineBelow(root, this.obsidianSettings.getDefaultIndentChars()),
       editor,
     );
 
