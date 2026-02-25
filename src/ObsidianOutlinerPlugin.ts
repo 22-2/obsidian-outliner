@@ -17,6 +17,7 @@ import { PasteBehaviourOverride } from "./features/PasteBehaviourOverride";
 import { SettingsTab } from "./features/SettingsTab";
 import { ShiftTabBehaviourOverride } from "./features/ShiftTabBehaviourOverride";
 import { SystemInfo } from "./features/SystemInfo";
+import { CopyWithoutWhitespaceAndMarkers } from "./features/CopyWithoutWhitespaceAndMarkers";
 import { TabBehaviourOverride } from "./features/TabBehaviourOverride";
 import { VerticalLines } from "./features/VerticalLines";
 import { VimOBehaviourOverride } from "./features/VimOBehaviourOverride";
@@ -65,6 +66,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       // new ReleaseNotesAnnouncement(this, this.settings),
       new SettingsTab(this, this.settings),
       new SystemInfo(this, this.settings),
+      new CopyWithoutWhitespaceAndMarkers(this),
 
       // general features
       new ListsMovementCommands(
