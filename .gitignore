@@ -1,4 +1,7 @@
 /node_modules/
-/main.js
+/dist/main.js
 /vault
+/.claude
 data.json
+
+main.js
