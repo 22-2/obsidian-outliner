@@ -39,10 +39,9 @@ class VerticalLinesPluginValue implements PluginValue {
     private parser: Parser,
     private view: EditorView,
   ) {
-    this.view.scrollDOM.addEventListener("scroll", this.onScroll);
     this.settings.onChange(this.scheduleRecalculate);
 
-    this.prepareDom();
+    // Do not prepare DOM eagerly — only create DOM when vertical lines are enabled.
     this.waitForEditor();
   }
 
@@ -57,6 +56,10 @@ class VerticalLinesPluginValue implements PluginValue {
   };
 
   private prepareDom() {
+    if (this.scroller && this.contentContainer) {
+      return;
+    }
+
     this.contentContainer = document.createElement("div");
     this.contentContainer.classList.add(
       "outliner-plugin-list-lines-content-container",
@@ -67,9 +70,31 @@ class VerticalLinesPluginValue implements PluginValue {
 
     this.scroller.appendChild(this.contentContainer);
     this.view.dom.appendChild(this.scroller);
+
+    // Register scroll listener only when scroller is present
+    this.view.scrollDOM.addEventListener("scroll", this.onScroll);
+  }
+
+  private removeDom() {
+    if (this.scroller) {
+      try {
+        this.view.scrollDOM.removeEventListener("scroll", this.onScroll);
+      } catch {}
+      if (this.scroller.parentElement === this.view.dom) {
+        this.view.dom.removeChild(this.scroller);
+      }
+    }
+
+    this.scroller = undefined as unknown as HTMLElement;
+    this.contentContainer = undefined as unknown as HTMLElement;
+    this.lineElements = [];
+    this.lines = [];
   }
 
   private onScroll = (e: Event) => {
+    if (!this.scroller) {
+      return;
+    }
     const { scrollLeft, scrollTop } = e.target as HTMLElement;
     this.scroller.scrollTo(scrollLeft, scrollTop);
   };
@@ -93,12 +118,24 @@ class VerticalLinesPluginValue implements PluginValue {
   private calculate = () => {
     this.lines = [];
 
+    const shouldShow =
+      this.settings.verticalLines && this.obsidianSettings.isDefaultThemeEnabled();
+
+    if (!shouldShow) {
+      // If DOM exists but we shouldn't show lines, remove it to avoid inserting elements
+      if (this.scroller) {
+        this.removeDom();
+      }
+      this.updateDom();
+      return;
+    }
+
     if (
-      this.settings.verticalLines &&
-      this.obsidianSettings.isDefaultThemeEnabled() &&
       this.view.viewportLineBlocks.length > 0 &&
       this.view.visibleRanges.length > 0
     ) {
+      // Ensure DOM is prepared when we need to render lines
+      this.prepareDom();
       const fromLine = this.editor.offsetToPos(this.view.viewport.from).line;
       const toLine = this.editor.offsetToPos(this.view.viewport.to).line;
       const lists = this.parser.parseRange(this.editor, fromLine, toLine);
@@ -259,6 +296,9 @@ class VerticalLinesPluginValue implements PluginValue {
   }
 
   private updateDom() {
+    if (!this.contentContainer || !this.scroller) {
+      return;
+    }
     const cmScroll = this.view.scrollDOM;
     const cmContent = this.view.contentDOM;
     const cmContentContainer = cmContent.parentElement;
@@ -311,8 +351,7 @@ class VerticalLinesPluginValue implements PluginValue {
 
   destroy() {
     this.settings.removeCallback(this.scheduleRecalculate);
-    this.view.scrollDOM.removeEventListener("scroll", this.onScroll);
-    this.view.dom.removeChild(this.scroller);
+    this.removeDom();
     clearTimeout(this.scheduled);
   }
 }
