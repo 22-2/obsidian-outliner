@@ -94,7 +94,8 @@ export class CreateNewItem implements Operation {
     const endOfLine = cursor.line === endPos.line && cursor.ch === endPos.ch;
 
     const onChildLevel =
-      listIsZoomingRoot || (hasChildren && !childIsFolded && endOfLine);
+      this.after &&
+      (listIsZoomingRoot || (hasChildren && !childIsFolded && endOfLine));
 
     const indent = onChildLevel
       ? hasChildren
@@ -134,7 +135,7 @@ export class CreateNewItem implements Operation {
     if (onChildLevel) {
       list.addBeforeAll(newList);
     } else {
-      if (!childIsFolded || !endOfLine) {
+      if (this.after && (!childIsFolded || !endOfLine)) {
         const children = list.getChildren();
         for (const child of children) {
           list.removeChild(child);

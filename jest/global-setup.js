@@ -131,6 +131,7 @@ async function prepareVault() {
     useTab: false,
     tabSize: 2,
     legacyEditor: false,
+    vimMode: true,
   };
   if (JSON.stringify(vaultConfig) !== JSON.stringify(newVaultConfig)) {
     debug(`  Saving ${vaultConfigFilePath}`);
