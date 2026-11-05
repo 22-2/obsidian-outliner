@@ -206,6 +206,11 @@ class VerticalLinesPluginValue implements PluginValue {
     }
 
     const coords = this.view.coordsAtPos(fromOffset, 1);
+    if (!coords) {
+      // Skip this subtree while its starting coordinates are unavailable.
+      // A later editor update can redraw it if the coordinates become available.
+      return;
+    }
     if (parentCtx.rootLeft === undefined) {
       parentCtx.rootLeft = coords.left;
     }

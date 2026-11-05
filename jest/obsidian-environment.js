@@ -1,5 +1,6 @@
 const { TestEnvironment } = require("jest-environment-node");
 const WebSocket = require("ws");
+const NativeInput = require("./native-input");
 
 let idSeq = 1;
 
@@ -8,6 +9,8 @@ module.exports = class CustomEnvironment extends TestEnvironment {
     await super.setup();
 
     this.callbacks = new Map();
+    this.nativeInput = new NativeInput();
+    this.global.nativeInput = (opts) => this.nativeInput.run(opts);
 
     this.createCommand("applyState");
     this.createCommand("simulateKeydown");
@@ -20,6 +23,16 @@ module.exports = class CustomEnvironment extends TestEnvironment {
     this.createCommand("drag");
     this.createCommand("move");
     this.createCommand("drop");
+    this.createCommand("openPopoutEditor");
+    this.createCommand("closePopoutEditor");
+    this.createCommand("selectTestEditor");
+    this.createCommand("getDragAndDropSnapshot");
+    this.createCommand("simulateWindowBlur");
+    this.createCommand("testHandle");
+    this.createCommand("openDropInvalidationEditor");
+    this.createCommand("replaceFromDropInvalidationEditor");
+    this.createCommand("getDropInvalidationObservations");
+    this.createCommand("closeDropInvalidationEditor");
   }
 
   createCommand(type) {
@@ -62,6 +75,7 @@ module.exports = class CustomEnvironment extends TestEnvironment {
   }
 
   async teardown() {
+    this.nativeInput.close();
     if (this.ws) {
       this.ws.close();
     }

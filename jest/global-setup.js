@@ -1,12 +1,8 @@
 const cp = require("child_process");
-const mkdirp = require("mkdirp");
-const path = require("path");
 const fs = require("fs");
 const WebSocket = require("ws");
 const debug = require("debug")("jest-obsidian");
-const promisify = require("util").promisify;
-const levelup = require("levelup");
-const leveldown = require("leveldown");
+const { ClassicLevel } = require("classic-level");
 
 const KILL_CMD =
   process.platform === "darwin"
@@ -27,6 +23,11 @@ const OBSIDIAN_APP_CMD =
     : process.platform === "win32"
       ? ["Obsidian.exe"]
       : ["flatpak", "run", "md.obsidian.Obsidian"];
+// Native gesture regressions use CDP only inside the isolated test profile.
+OBSIDIAN_APP_CMD.push(
+  "--remote-debugging-address=127.0.0.1",
+  "--remote-debugging-port=9222",
+);
 const OBSIDIAN_LOCAL_STORAGE_PATH =
   process.platform === "darwin"
     ? process.env.HOME +
@@ -75,7 +76,7 @@ async function prepareObsidian() {
 
   if (!fs.existsSync(OBSIDIAN_CONFIG_PATH)) {
     debug(`  Creating ${OBSIDIAN_CONFIG_PATH}`);
-    mkdirp.sync(OBSIDIAN_CONFIG_DIR);
+    fs.mkdirSync(OBSIDIAN_CONFIG_DIR, { recursive: true });
     fs.writeFileSync(
       OBSIDIAN_CONFIG_PATH,
       '{"vaults":{},"updateDisabled":true}',
@@ -110,7 +111,7 @@ async function prepareObsidian() {
 async function prepareVault() {
   debug(`Prepare vault`);
 
-  mkdirp.sync(VAULT_DIR);
+  fs.mkdirSync(VAULT_DIR, { recursive: true });
   fs.writeFileSync(VAULT_DIR + "/test.md", "");
 
   const vaultConfigFilePath = `${VAULT_DIR}/.obsidian/app.json`;
@@ -145,17 +146,22 @@ async function prepareVault() {
   );
 
   debug(`  Disabling Safe Mode`);
-  mkdirp.sync(OBSIDIAN_LOCAL_STORAGE_PATH);
-  const localStorage = levelup(leveldown(OBSIDIAN_LOCAL_STORAGE_PATH));
+  const localStorage = new ClassicLevel(OBSIDIAN_LOCAL_STORAGE_PATH, {
+    keyEncoding: "buffer",
+    valueEncoding: "buffer",
+  });
   const key = Buffer.from(
     "5f6170703a2f2f6f6273696469616e2e6d640001656e61626c652d706c7567696e2d35613135343733313236303931313131",
     "hex",
   );
   const value = Buffer.from("0174727565", "hex");
-  await promisify(localStorage.put.bind(localStorage))(key, value);
-  await promisify(localStorage.close.bind(localStorage))();
+  try {
+    await localStorage.put(key, value);
+  } finally {
+    await localStorage.close();
+  }
 
-  mkdirp.sync(vaultPluginDir);
+  fs.mkdirSync(vaultPluginDir, { recursive: true });
 
   debug(`  Copying ${vaultPluginDir}/main.js`);
   fs.copyFileSync("dist/main.js", `${vaultPluginDir}/main.js`);
