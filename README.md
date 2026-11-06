@@ -86,7 +86,7 @@ Don't let the cursor move to the bullet position. Affects cursor movement, text 
 
 Make the Enter key behave the same as other outliners:
 
-- Enter outdents list item if it's empty.
+- Enter outdents list item if it's empty when **Outdent empty items with Enter** is enabled in settings (disabled by default). When it is disabled, Enter keeps empty bullets and checkboxes and continues the list, and repeated Enter does not exit the list. This option only applies when **Enhance the Enter key** is enabled and does not change Vim `o`/`O`.
 - Enter creates new line on children level if there are any children.
 - Shift-Enter creates a new note line.
 

@@ -7,7 +7,7 @@ interface SettingsObject {
   debug: boolean;
   stickCursor: KeepCursorWithinContent | boolean;
   betterEnter: boolean;
-  enterOutdentEmptyLastItem: boolean;
+  betterEnterOutdent: boolean;
   betterVimO: boolean;
   betterTab: boolean;
   selectAll: boolean;
@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: SettingsObject = {
   debug: false,
   stickCursor: "bullet-and-checkbox",
   betterEnter: true,
-  enterOutdentEmptyLastItem: false,
+  betterEnterOutdent: false,
   betterVimO: true,
   betterTab: true,
   selectAll: true,
@@ -80,12 +80,12 @@ export class Settings {
     this.set("betterEnter", value);
   }
 
-  get enterOutdentEmptyLastItem() {
-    return this.values.enterOutdentEmptyLastItem;
+  get enterOutdentsEmptyListItem() {
+    return this.values.betterEnterOutdent;
   }
 
-  set enterOutdentEmptyLastItem(value: boolean) {
-    this.set("enterOutdentEmptyLastItem", value);
+  set enterOutdentsEmptyListItem(value: boolean) {
+    this.set("betterEnterOutdent", value);
   }
 
   get overrideVimOBehaviour() {
