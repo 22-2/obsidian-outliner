@@ -427,7 +427,7 @@ export class Parser {
 
     for (let l = fromLine; l <= toLine; l++) {
       const line = editor.getLine(l);
-      const item = parseListItemRe.exec(line);
+      const item = Parser.COMPILED_REGEXES.parseListItem.exec(line);
       if (item) {
         itemIndent = item[1];
         notesIndent = null;

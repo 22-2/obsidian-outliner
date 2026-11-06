@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: SettingsObject = {
   debug: false,
   stickCursor: "bullet-and-checkbox",
   betterEnter: true,
-  enterOutdentEmptyLastItem: true,
+  enterOutdentEmptyLastItem: false,
   betterVimO: true,
   betterTab: true,
   selectAll: true,
