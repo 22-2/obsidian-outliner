@@ -1,4 +1,6 @@
 allowBuilds:
+  '@parcel/watcher': true
+  classic-level: true
   esbuild: true
   leveldown: true
   unrs-resolver: true
