@@ -122,6 +122,20 @@ class ObsidianOutlinerPluginSettingTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName("Hide selection color on list indentation")
+      .setDesc(
+        "Hide the selection color before list markers. The indentation remains selected and is still included when copying or deleting.",
+      )
+      .addToggle((toggle) => {
+        toggle
+          .setValue(this.settings.hideIndentSelection)
+          .onChange(async (value) => {
+            this.settings.hideIndentSelection = value;
+            await this.settings.save();
+          });
+      });
+
+    new Setting(containerEl)
       .setName("Improve the style of your lists")
       .setDesc(
         "Styles are only compatible with built-in Obsidian themes and may not be compatible with other themes.",

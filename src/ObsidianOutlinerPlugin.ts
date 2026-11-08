@@ -3,12 +3,14 @@ import { Plugin } from "obsidian";
 import { ArrowLeftAndCtrlArrowLeftBehaviourOverride } from "./features/ArrowLeftAndCtrlArrowLeftBehaviourOverride";
 import { BackspaceBehaviourOverride } from "./features/BackspaceBehaviourOverride";
 import { BetterListsStyles } from "./features/BetterListsStyles";
+import { CopyWithoutWhitespaceAndMarkers } from "./features/CopyWithoutWhitespaceAndMarkers";
 import { CtrlAAndCmdABehaviourOverride } from "./features/CtrlAAndCmdABehaviourOverride";
 import { DeleteBehaviourOverride } from "./features/DeleteBehaviourOverride";
 import { DragAndDrop } from "./features/DragAndDrop";
 import { EditorSelectionsBehaviourOverride } from "./features/EditorSelectionsBehaviourOverride";
 import { EnterBehaviourOverride } from "./features/EnterBehaviourOverride";
 import { Feature } from "./features/Feature";
+import { HideIndentSelection } from "./features/HideIndentSelection";
 import { ListsFoldingCommands } from "./features/ListsFoldingCommands";
 import { ListsMovementCommands } from "./features/ListsMovementCommands";
 import { MetaBackspaceBehaviourOverride } from "./features/MetaBackspaceBehaviourOverride";
@@ -17,7 +19,6 @@ import { PasteBehaviourOverride } from "./features/PasteBehaviourOverride";
 import { SettingsTab } from "./features/SettingsTab";
 import { ShiftTabBehaviourOverride } from "./features/ShiftTabBehaviourOverride";
 import { SystemInfo } from "./features/SystemInfo";
-import { CopyWithoutWhitespaceAndMarkers } from "./features/CopyWithoutWhitespaceAndMarkers";
 import { TabBehaviourOverride } from "./features/TabBehaviourOverride";
 import { VerticalLines } from "./features/VerticalLines";
 import { VimOBehaviourOverride } from "./features/VimOBehaviourOverride";
@@ -65,6 +66,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
       // service features
       // new ReleaseNotesAnnouncement(this, this.settings),
       new SettingsTab(this, this.settings),
+      new HideIndentSelection(this, this.settings),
       new SystemInfo(this, this.settings),
       new CopyWithoutWhitespaceAndMarkers(this),
 
@@ -108,11 +110,7 @@ export default class ObsidianOutlinerPlugin extends Plugin {
         this.operationPerformer,
       ),
 
-      new PasteBehaviourOverride(
-        this,
-        this.settings,
-        this.operationPerformer,
-      ),
+      new PasteBehaviourOverride(this, this.settings, this.operationPerformer),
 
       // features based on settings.overrideTabBehaviour
       new TabBehaviourOverride(

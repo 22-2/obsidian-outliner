@@ -103,3 +103,7 @@ body.outliner-plugin-dnd:not(.outliner-plugin-dragging)
 html body.outliner-plugin-dnd.outliner-plugin-dragging {
   cursor: grabbing !important;
 }
+.outliner-hide-indent-selection .HyperMD-list-line .cm-hmd-list-indent::selection,
+.outliner-hide-indent-selection .HyperMD-list-line .cm-hmd-list-indent *::selection {
+  background-color: transparent !important;
+}

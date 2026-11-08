@@ -12,6 +12,7 @@ interface SettingsObject {
   betterTab: boolean;
   selectAll: boolean;
   expandSelection: boolean;
+  hideIndentSelection: boolean;
   listLines: boolean;
   listLineAction: VerticalLinesAction;
   dnd: boolean;
@@ -28,6 +29,7 @@ const DEFAULT_SETTINGS: SettingsObject = {
   betterTab: true,
   selectAll: true,
   expandSelection: false,
+  hideIndentSelection: false,
   listLines: false,
   listLineAction: "toggle-folding",
   dnd: true,
@@ -112,6 +114,14 @@ export class Settings {
 
   set expandSelection(value: boolean) {
     this.set("expandSelection", value);
+  }
+
+  get hideIndentSelection() {
+    return this.values.hideIndentSelection;
+  }
+
+  set hideIndentSelection(value: boolean) {
+    this.set("hideIndentSelection", value);
   }
 
   get betterListsStyles() {
